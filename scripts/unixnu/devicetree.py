@@ -216,7 +216,12 @@ def hardware_properties(entry, handles, base=0):
             entry.strings(key)
             properties.append((key, raw))
         elif key in U32:
-            properties.append((key, struct.pack('<I', entry.scalar(key))))
+            value = struct.pack('<I', entry.scalar(key))
+            properties.append((key, value))
+            if key == 'phandle':
+                # XNU indexes interrupt parents by AAPL,phandle. Keep the
+                # standard key for drivers that consume the hardware binding.
+                properties.append(('AAPL,phandle', value))
         elif key in U64:
             cells = entry.cells(key)
             if len(cells) not in (1, 2):

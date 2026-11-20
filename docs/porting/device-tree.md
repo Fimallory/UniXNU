@@ -56,7 +56,8 @@ See the [device template](/porting/device-repository) and [SoC support](/porting
 | Property | Input | ADT representation |
 | --- | --- | --- |
 | `compatible`, `device_type`, `reg-names`, `interrupt-names`, `clock-names`, `method` | NUL-terminated strings | String bytes |
-| `phandle`, `linux,phandle`, `#interrupt-cells`, `#iommu-cells`, `clock-frequency`, `timebase-frequency` | One big-endian cell | Little-endian u32 |
+| `phandle` | One big-endian cell | Little-endian u32 under both `phandle` and `AAPL,phandle` |
+| `linux,phandle`, `#interrupt-cells`, `#iommu-cells`, `clock-frequency`, `timebase-frequency` | One big-endian cell | Little-endian u32 |
 | `redistributor-stride` | One or two cells | Little-endian u64 |
 | `interrupt-controller`, `dma-coherent` | Empty property | Empty property |
 | `reg` | Address/size tuples using the parent's cell widths | Translated physical u64 address/size pairs |
@@ -71,6 +72,11 @@ Every translated bus declares `ranges`. An empty `ranges` gives an identity
 mapping. Each register range must have one matching translation. Referenced
 providers require unique nonzero phandles and their argument-cell counts.
 Interrupt specifiers must match the selected interrupt controller.
+
+XNU's `IODeviceTreeSupport` registers interrupt parents using `AAPL,phandle`
+and resolves the little-endian `interrupt-parent` value against that index.
+The converter emits this alias alongside `phandle`, preserving the standard
+property for drivers that read it directly. Both keys carry the same four bytes.
 
 The generator exports enabled nodes with `unixnu,adt-name`. Exported names are
 unique. Add a typed binding in the common converter when a driver needs another
